@@ -36,8 +36,10 @@ for icond = 1:ncond
         yfphist(icond,:) = histcounts(yfpnorm, ygrid) ./ ntotal;
         
         onFrac(icond) = sum(yfpnorm > -2.5)./numel(yfpnorm);
-        [areaMetric(icond), onMean(icond), onMed(icond), onGeoMean(icond)] = ...
-            AreaMetricHist(yfphist(icond,:),yfphist(1,:),ygrid);
+        if all(~isnan(yfphist(1,:)))
+            [areaMetric(icond), onMean(icond), onMed(icond), onGeoMean(icond)] = ...
+                AreaMetricHist(yfphist(icond,:),yfphist(1,:),ygrid);
+        end
         meanMetric(icond) = log10(mean(10.^yfpnorm));
         stdDev(icond) = std(yfpnorm);
         [thresh(icond), eff(icond)] = OtsuThresh(yfphist(icond,:), ygrid);
@@ -46,7 +48,7 @@ end
 
 metrics = table;
 
-% scalar metrics
+% glu50 of on fraction
 onFrac([1 end]) = nan;
 idx = find(onFrac<0.5,1,'last');
 if ~isempty(idx) && idx < ncond && ~any(isnan(onFrac(idx:(idx+1))))
@@ -55,6 +57,7 @@ else
     metrics.glu50_onFrac = nan;
 end
 
+% decision threshold (glu50 of area metric)
 areaMetric([1 end]) = nan;
 idx = find(areaMetric<0.5,1,'last');
 if ~isempty(idx) && idx < ncond && ~any(isnan(areaMetric(idx:(idx+1))))
@@ -63,22 +66,7 @@ else
     metrics.glu50_areaMetric = nan;
 end
 
-thresh_lo = 0.2;
-thresh_hi = 0.8;
-idx = find(areaMetric<thresh_lo,1,'last');
-if ~isempty(idx) && idx < ncond && ~any(isnan(areaMetric(idx:(idx+1))))
-    glu_lo = 2-interp1(areaMetric(idx:(idx+1)), xgrid(idx:(idx+1)), thresh_lo);
-else
-    glu_lo = nan;
-end
-idx = find(areaMetric<thresh_hi,1,'last');
-if ~isempty(idx) && idx < ncond && ~any(isnan(areaMetric(idx:(idx+1))))
-    glu_hi = 2-interp1(areaMetric(idx:(idx+1)), xgrid(idx:(idx+1)), thresh_hi);
-else
-    glu_hi = nan;
-end
-metrics.areaMetricRange = glu_lo - glu_hi;
-
+% expression threshold
 onMean_thresh = onMean(end) - 1;
 onMean([1 end]) = nan;
 idx = find(onMean<onMean_thresh,1,'last');
@@ -89,6 +77,23 @@ else
     metrics.onMean10 = nan;
 end
 
+% thresh_lo = 0.2;
+% thresh_hi = 0.8;
+% idx = find(areaMetric<thresh_lo,1,'last');
+% if ~isempty(idx) && idx < ncond && ~any(isnan(areaMetric(idx:(idx+1))))
+%     glu_lo = 2-interp1(areaMetric(idx:(idx+1)), xgrid(idx:(idx+1)), thresh_lo);
+% else
+%     glu_lo = nan;
+% end
+% idx = find(areaMetric<thresh_hi,1,'last');
+% if ~isempty(idx) && idx < ncond && ~any(isnan(areaMetric(idx:(idx+1))))
+%     glu_hi = 2-interp1(areaMetric(idx:(idx+1)), xgrid(idx:(idx+1)), thresh_hi);
+% else
+%     glu_hi = nan;
+% end
+% metrics.areaMetricRange = glu_lo - glu_hi;
+
+% mean of all cells
 mean_thresh = meanMetric(end) - 1;
 meanMetric([1 end]) = nan;
 idx = find(meanMetric<mean_thresh,1,'last');
