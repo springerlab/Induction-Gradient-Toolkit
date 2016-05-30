@@ -1,10 +1,11 @@
 function [a, onMean, onMed, onGeoMean] = ...
-    AreaMetricRS(qhist, bhist, datarange)
-% AreaMetricRS computes the fraction of a distribution that is above and
-% outside a reference "basal" distribution, after rescaling left half of basal
-% distribution to optimally overlay with query distribution.
+    AreaMetricRR(qhist, bhist, datarange)
+% AreaMetricRR (or "Area Metric with Rescaled Reference") computes the
+% fraction of a distribution that is above and outside a reference "basal"
+% distribution, after rescaling left half of basal distribution to
+% optimally overlay with query distribution.
 %
-% Updated 20160328
+% Updated 20160530
 if any(isnan(bhist))
     a = nan;
     return
